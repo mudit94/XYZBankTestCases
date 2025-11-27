@@ -1,4 +1,5 @@
 # Banking Application - Playwright Test Automation Framework
+<br>
 **Test Application**: https://www.globalsqa.com/angularJs-protractor/BankingProject/#/login 
 **Framework**: Playwright with TypeScript  
 **Design Pattern**: Page Object Model (POM)  
@@ -6,7 +7,61 @@
 
 ---
 
+## Quick Start
+Take a clone of this repo 
 
+git clone https://github.com/mudit94/XYZBankTestCases.git
+
+### Installation
+
+```bash
+
+Open the terminal and perform the below steps
+<br>
+npm install
+# Install Playwright browsers
+npx playwright install
+```
+
+### Run Tests
+
+```bash
+# Run all JIRA tests
+npm test
+
+# Run specific JIRA story tests
+npm run test:jira1    # JIRA-1: Create Customer
+npm run test:jira2    # JIRA-2: Open Account
+npm run test:jira3    # JIRA-3: Make Deposit
+npm run test:additional #Additional Tests
+# Run in headed mode (browser in action)
+npm run test:headed
+
+# Run in UI mode (interactive)
+npm run test:ui
+
+```
+### View Reports
+
+```bash
+# Run tests and view report
+npm run test:report
+
+
+### For running in different browsers
+- Chrome/Chromium
+npm run test:chrome
+- Firefox
+npm run test:firefox
+- Safari/WebKit
+npm run test:safari
+
+### Run based on Interactive Mode
+```bash
+npm run test:headed      # Visual browser execution
+npm run test:ui          # Interactive test explorer
+```
+## Features
 ### JIRA-1: Create a Customer
 **Epic**: Bank Manager Operations  
 **User Story**: As a bank manager, I want to be able to add new bank customers so that I can provide quality services to our customers
@@ -97,54 +152,3 @@ Natwest-assignment/
 └── README.md                      # This file
 ```
 
-## Quick Start
-
-### Installation
-
-```bash
-
-#Install playwright using npm
-npm init playwright@latest
-
-# Install Playwright browsers
-npx playwright install
-```
-
-### Run Tests
-
-```bash
-# Run all JIRA tests
-npm test
-
-# Run specific JIRA story tests
-npm run test:jira1    # JIRA-1: Create Customer
-npm run test:jira2    # JIRA-2: Open Account
-npm run test:jira3    # JIRA-3: Make Deposit
-npm run test:additional #Additional Tests
-# Run in headed mode (browser in action)
-npm run test:headed
-
-# Run in UI mode (interactive)
-npm run test:ui
-
-```
-### View Reports
-
-```bash
-# Run tests and view report
-npm run test:report
-
-
-### For running in different browsers
-- Chrome/Chromium
-npm run test:chrome
-- Firefox
-npm run test:firefox
-- Safari/WebKit
-npm run test:safari
-
-### Run based on Interactive Mode
-```bash
-npm run test:headed      # Visual browser execution
-npm run test:ui          # Interactive test explorer
-```
