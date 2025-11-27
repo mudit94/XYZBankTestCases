@@ -134,25 +134,7 @@ npm  run  test:safari
   
 
 ### JIRA-3: Make a Deposit
-
-  
-  
-
-**Epic**: Bank Customer Operations
-
-**User Story**: As a bank customer, I want to be able to withdraw balance less than or equal to the available balance from one of my existing accounts so that I am not showing some or 0 balance
-
-  
-
-**Acceptance Criteria**:
-
-- Success message: "Transaction successful" (displayed above the amount field)
-
-- Account balance is updated accordingly
-
-- New record added to Transactions table with Transaction Type = Debit
-
-  
+ 
   
 
 **User Story**: As a bank customer, I want to be able to make a deposit to one of my existing accounts so that I can manage my finances
@@ -176,26 +158,10 @@ npm  run  test:safari
   
 
 ### Additional Test: Withdraw Balance
-
+---
 **Epic**: Bank Additional Operations
 
-**User Story**: As a bank customer, I do not want to be able to withdraw balance more than the available balance from one of my existing accounts so that I am not showing balance in negative
-
-  
-
-**Acceptance Criteria**:
-
-- Success message: "Transaction Failed. You can not withdraw amount more than the balance." 
-
-- Account balance is not updated
-
-- No New record added to Transactions table
-
-  
-  
-
----
-**User Story**: As a bank customer, I want to be able to withdraw balance less than the available balance from one of my existing accounts so that I am  having balance=initial - withdrawal 
+**User Story**: As a bank customer, I want to be able to withdraw balance less than or equal to the available balance from one of my existing accounts so that I am  having balance=initial - withdrawal >=0 
 
   
 
@@ -207,7 +173,9 @@ npm  run  test:safari
 
 - New Debit type record added to Transactions table
 
-  
+- Empty amount validation: "Please fill in this field."
+
+- Error message: "Transaction Failed. You can not withdraw amount more than the balance." on trying to withdraw more than available  
 
 ## Project Structure
 
