@@ -20,7 +20,7 @@
     "test:report": "playwright test tests/createCustomer.spec.ts tests/openAccount.spec.ts tests/makeDeposit.spec.ts && playwright show-report"
   },
   "keywords": [],
-  "author": "",
+  "author": "Mudit Maheshwari",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.56.1",
