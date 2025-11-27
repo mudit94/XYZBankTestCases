@@ -185,7 +185,7 @@ npm  run  test:safari
 
 **Acceptance Criteria**:
 
-- Success message: "Transaction Failed. You can not withdraw amount more than the balance." (displayed above the amount field)
+- Success message: "Transaction Failed. You can not withdraw amount more than the balance." 
 
 - Account balance is not updated
 
@@ -195,6 +195,17 @@ npm  run  test:safari
   
 
 ---
+**User Story**: As a bank customer, I want to be able to withdraw balance less than the available balance from one of my existing accounts so that I am  having balance=initial - withdrawal 
+
+  
+
+**Acceptance Criteria**:
+
+- Success message: "Transaction successful"
+
+- Account balance is updated
+
+- New Debit type record added to Transactions table
 
   
 
