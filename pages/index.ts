@@ -1,0 +1,9 @@
+export { AccountPage } from "./AccountPage";
+export { AddCustomerPage } from "./AddCustomerPage";
+export { BankManagerPage } from "./BankManagerPage";
+export { CustomerLoginPage } from "./CustomerLoginPage";
+export { CustomersTablePage } from "./CustomersTablePage";
+export { HomePage } from "./HomePage";
+export { TransactionsPage } from "./TransactionsPage";
+export { WithdrawalPage } from "./WithdrawalPage";  
+export { DepositPage } from "./DepositPage";
