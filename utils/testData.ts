@@ -1,5 +1,5 @@
 /**
- * Test data for the banking application
+ * Test data
  */
 
 export const TestCustomers = {
