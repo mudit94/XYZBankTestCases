@@ -15,9 +15,6 @@ export class TransactionsPage extends BasePage {
      transactionRows: Locator;
      backButton: Locator;
      resetButton: Locator;
-     startDateInput: Locator;
-     endDateInput: Locator;
-     noTransactionsMessage: Locator;
      DateTimeHeaderLink: Locator;
      firstRow: Locator;
     constructor(page: Page) {
@@ -27,9 +24,6 @@ export class TransactionsPage extends BasePage {
         this.transactionRows = page.locator('table.table tbody tr');
         this.backButton = page.locator('button[ng-click="back()"]');
         this.resetButton = page.locator('button[ng-click="reset()"]');
-        this.startDateInput = page.locator('#start');
-        this.endDateInput = page.locator('#end');
-        this.noTransactionsMessage = page.locator('text=No transactions');
         this.DateTimeHeaderLink = page.getByRole('link').filter({ hasText: 'Date-Time' });
     }
 
@@ -42,7 +36,7 @@ export class TransactionsPage extends BasePage {
     }
 
     /**
-     * Click reset button to clear filters
+     * Click reset button to clear date filters
      */
     async clickReset(): Promise<void> {
         await this.resetButton.click({ force: true });
@@ -85,27 +79,13 @@ export class TransactionsPage extends BasePage {
         return await this.transactionRows.count();
     }
 
-    /**
-     * Filter transactions by date range
-     */
-    async filterByDateRange(startDate: string, endDate: string): Promise<void> {
-        await this.startDateInput.fill(startDate);
-        await this.endDateInput.fill(endDate);
-        await this.page.waitForTimeout(500);
-    }
 
     async isLoaded(): Promise<boolean> {
         return await this.backButton.isVisible() &&
             await this.resetButton.isVisible();
     }
 
-    /**
-     * Check if there are any transactions
-     */
-    async hasTransactions(): Promise<boolean> {
-        const count = await this.getTransactionCount();
-        return count > 0;
-    }
+  
 
     /**
      * Get transactions by type (Credit/Debit)
