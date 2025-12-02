@@ -11,12 +11,12 @@ export interface Transaction {
 
 export class TransactionsPage extends BasePage {
     // Locators
-     transactionsTable: Locator;
-     transactionRows: Locator;
-     backButton: Locator;
-     resetButton: Locator;
-     DateTimeHeaderLink: Locator;
-     firstRow: Locator;
+    transactionsTable: Locator;
+    transactionRows: Locator;
+    backButton: Locator;
+    resetButton: Locator;
+    DateTimeHeaderLink: Locator;
+    firstRow: Locator;
     constructor(page: Page) {
         super(page);
         this.transactionsTable = page.locator('table.table');
@@ -51,8 +51,9 @@ export class TransactionsPage extends BasePage {
      */
     async getAllTransactions(): Promise<Transaction[]> {
         const transactions: Transaction[] = [];
-        this.page.waitForSelector('table.table tbody tr#anchor0', { state: 'visible', timeout: 10000 });
-        this.page.waitForFunction(
+        await this.page.waitForSelector('table.table tbody tr#anchor0', { state: 'visible', timeout: 10000 });
+        await expect(this.firstRow).toBeVisible({ timeout: 15000 });
+        await this.page.waitForFunction(
             `document.querySelectorAll('table.table tbody tr').length >= 0`,
             { timeout: 10000 }
         );
@@ -65,13 +66,24 @@ export class TransactionsPage extends BasePage {
                     const date = await cells[0].textContent() || '';
                     const amount = await cells[1].textContent() || '';
                     const type = await cells[2].textContent() || '';
-                    transactions.push({ date, amount, type });
+                    await transactions.push({ date, amount, type });
                 }
             }
         }
         return transactions;
     }
-
+    async getFirstColumnOfTable(): Promise<string[]> {
+        const rows = await this.transactionRows.all();
+        const dates: string[] = [];
+        for (const row of rows) {
+            const cells = await row.locator('td:nth-of-type(1)').all();
+            if (cells.length >= 1) {
+                const date = await cells[0].textContent() || '';
+                await dates.push(date);
+            }
+        }
+        return dates;
+    }
     /**
      * Get transaction count
      */
@@ -85,7 +97,7 @@ export class TransactionsPage extends BasePage {
             await this.resetButton.isVisible();
     }
 
-  
+
 
     /**
      * Get transactions by type (Credit/Debit)
