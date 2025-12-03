@@ -34,8 +34,9 @@ export const ErrorMessages = {
 export const SuccessMessages = {
     DEPOSIT_SUCCESS: 'Deposit Successful',
     WITHDRAWAL_SUCCESS: 'Transaction successful',
-    ACCOUNT_CREATED_SUCCESS: 'Account created successfully with account Number :'
-};
+    ACCOUNT_CREATED_SUCCESS: 'Account created successfully with account Number :',
+    CUSTOMER_ADDED_SUCCESS: 'Customer added successfully with customer id'
+} as const;
 export const URLs = {
     BASE_URL: 'https://www.globalsqa.com/angularJs-protractor/BankingProject',
     HOME: '/#/login',
@@ -47,7 +48,7 @@ export const NewCustomerDetail = {
     firstName: `NewCustomer${Date.now()}`,
     lastName: 'TableTest',
     postCode: 'NW1 6XE'
-}
+} as const
 export const TestPostcodes = 'SW1A 1AA'
 export const EmptyFields = {
     PLEASE_FILL: 'Please fill out this field',
@@ -55,6 +56,7 @@ export const EmptyFields = {
     PLEASE_ENTER_NUMBER: 'Please enter a number',
     ENTER: 'Enter a valid value',
     PLEASE_ENTER_VALID: 'Please enter a valid value. The two nearest valid values are',
-    PLEASE_SELECT_VALID: 'Please select a valid value'
-
-}
+    PLEASE_SELECT_VALID: 'Please select a valid value',
+    FILL_SMALL: 'fill out this field'
+} as const
+export const DuplicateCustomerMessages = 'Please check the details. Customer may be duplicate.';

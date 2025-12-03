@@ -74,8 +74,8 @@ export class OpenAccountPage extends BasePage {
      * Verify open account page is loaded
      */
     async isLoaded(): Promise<boolean> {
-        return await this.customerDropdown.isVisible() &&
-            await this.currencyDropdown.isVisible() &&
-            await this.processButton.isVisible();
+        return await this.isElementVisible(this.customerDropdown) &&
+            await this.isElementVisible(this.currencyDropdown) &&
+            await this.isElementVisible(this.processButton);
     }
 }

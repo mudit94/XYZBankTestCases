@@ -19,7 +19,7 @@ export class HomePage extends BasePage {
     async goto(): Promise<void> {
         await this.navigate('/angularJs-protractor/BankingProject/');
         await this.waitForPageLoad();
-        expect(this.page.url()).toContain('/login');
+       await expect(this.page.url()).toContain('/login');
 
     }
 

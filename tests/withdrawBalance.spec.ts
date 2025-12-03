@@ -1,10 +1,9 @@
-import { test, Page, expect } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { AccountPage, AddCustomerPage, BankManagerPage, CustomerLoginPage, CustomersTablePage, HomePage, WithdrawalPage, TransactionsPage } from "../pages";
 import { EmptyFields, ErrorMessages, SuccessMessages, TestCustomers } from "../utils/testData";
 
-
-test.describe('JIRA-4: Withdraw Balance', () => {
-    let page: Page;
+test.describe('Withdraw Balance', () => {
+    
     let homePage: HomePage;
     let bankManagerPage: BankManagerPage;
     let addCustomerPage: AddCustomerPage;
@@ -13,8 +12,9 @@ test.describe('JIRA-4: Withdraw Balance', () => {
     let accountPage: AccountPage;
     let withdrawalPage: WithdrawalPage;
     let transactionsPage: TransactionsPage;
-    test.beforeEach(async ({ browser }) => {
-        page = await browser.newPage();
+    test.beforeEach(async ({page,browser,context }) => {
+        context = await browser.newContext();
+        page = await context.newPage();
         homePage = new HomePage(page);
         bankManagerPage = new BankManagerPage(page);
         addCustomerPage = new AddCustomerPage(page);
@@ -29,12 +29,10 @@ test.describe('JIRA-4: Withdraw Balance', () => {
         await customerLoginPage.login(TestCustomers.HERMOINE_GRANGER);
     });
 
-    test.afterEach(async () => {
+    test.afterEach(async ({page}) => {
         await page.close();
     });
-    test('Verify customer can withdraw balance less than or equal to available', async ({ browser }) => {
-
-
+    test('Verify customer can withdraw balance less than or equal to available', async () => {
 
         const withdrawalAmount = 5091;
         let availableBalance = await accountPage.getBalanceAsNumber();
@@ -45,32 +43,30 @@ test.describe('JIRA-4: Withdraw Balance', () => {
         let newAvailableBalance = await accountPage.getBalanceAsNumber();
         expect(newAvailableBalance).toBe(availableBalance - withdrawalAmount);
     });
-    test('Verify withdraw transaction appears as Debit Type in the transactions table', async ({ browser }) => {
-
-
+    test('Verify withdraw transaction appears as Debit Type in the transactions table', async ({page}) => {
         const withdrawalAmount = 500;
         await accountPage.clickWithdrawl();
         await withdrawalPage.withdraw(withdrawalAmount);
         await accountPage.clickTransactions();
         let isLoaded = await transactionsPage.isLoaded();
-        expect(isLoaded).toBeTruthy();
+        await expect(isLoaded).toBeTruthy();
         await transactionsPage.transactionsTable.waitFor({ state: 'visible', timeout: 5000 });
         await transactionsPage.DateTimeHeaderLink.click({ force: true });
         await page.waitForTimeout(5000);
         const transactions = await transactionsPage.getAllTransactions();
         await page.waitForTimeout(5000);
-        expect(transactions.length).toBeGreaterThan(0);
+        await expect(transactions.length).toBeGreaterThan(0);
 
         // After sorting by Date-Time in reverse, the first transaction should be our most recent deposit
         const firstTransaction = transactions[0];
-        expect(firstTransaction.amount).toContain(withdrawalAmount.toString());
-        expect(firstTransaction.type).toBe('Debit');
+        await expect(firstTransaction.amount).toContain(withdrawalAmount.toString());
+        await expect(firstTransaction.type).toBe('Debit');
 
     })
-    test('Verify customer cannot withdraw balance more than available', async () => {
+    test('Verify customer cannot withdraw balance more than available', async ({page}) => {
         // Test Data initialization
         const withdrawalAmount = 6000;
-
+        //Act
         await accountPage.clickTransactions();
         await page.waitForLoadState();
         await transactionsPage.transactionsTable.waitFor({ state: 'visible', timeout: 7000 });
@@ -80,14 +76,14 @@ test.describe('JIRA-4: Withdraw Balance', () => {
         await accountPage.clickWithdrawl();
         await withdrawalPage.withdraw(withdrawalAmount);
         let errorMessage = await withdrawalPage.getWithdrawalMessage();
-        expect(errorMessage).toContain(ErrorMessages.INSUFFICIENT_FUNDS);
+       await expect(errorMessage).toContain(ErrorMessages.INSUFFICIENT_FUNDS);
         await accountPage.clickTransactions();
         await transactionsPage.transactionsTable.waitFor({ state: 'visible', timeout: 5000 });
         let newTransactionsCount = await transactionsPage.getTransactionCount();
         expect(newTransactionsCount).toBe(transactionsCount);
-        await transactionsPage.clickBack();;
+        await transactionsPage.clickBack();
         let newAvailableBalance = await accountPage.getBalanceAsNumber();
-        expect(newAvailableBalance).toBe(availableBalance);
+        await expect(newAvailableBalance).toBe(availableBalance);
 
     });
     test('Verify empty amount shows validation tooltip', async ({ browserName }) => {
@@ -97,13 +93,13 @@ test.describe('JIRA-4: Withdraw Balance', () => {
         await withdrawalPage.clickWithdraw(); // Click without entering amount
         const validationMessage = await withdrawalPage.getFieldValidationMessage();
         if (browserName === 'firefox') {
-            expect(validationMessage).toContain(EmptyFields.PLEASE_ENTER_NUMBER);
+            await expect(validationMessage).toContain(EmptyFields.PLEASE_ENTER_NUMBER);
         }
         else if (browserName === 'webkit') {
-            expect(validationMessage).toContain(EmptyFields.FILL);
+            await expect(validationMessage).toContain(EmptyFields.FILL);
         }
         else {
-            expect(validationMessage).toContain(EmptyFields.PLEASE_FILL);
+            await expect(validationMessage).toContain(EmptyFields.PLEASE_FILL);
         }
     });
-});
+})

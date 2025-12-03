@@ -57,8 +57,8 @@ export class WithdrawalPage extends BasePage {
      * Verify withdrawal page is loaded
      */
     async isLoaded(): Promise<boolean> {
-        return await this.amountInput.isVisible() &&
-            await this.withdrawButton.isVisible();
+        return await this.isElementVisible(this.amountInput) &&
+            await this.isElementVisible(this.withdrawButton);
     }
 
     /**
@@ -66,8 +66,7 @@ export class WithdrawalPage extends BasePage {
      */
     async isWithdrawalSuccessful(): Promise<boolean> {
         const message = await this.getWithdrawalMessage();
-        return message.toLowerCase().includes('success') ||
-            message.toLowerCase().includes('transaction successful');
+        return message.toLowerCase().includes('transaction successful');
     }
 
     /**

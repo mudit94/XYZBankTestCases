@@ -1,9 +1,9 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { HomePage } from '../pages/HomePage';
 import { BankManagerPage } from '../pages/BankManagerPage';
 import { AddCustomerPage } from '../pages/AddCustomerPage';
 import { CustomersTablePage } from '../pages/CustomersTablePage';
-import { NewCustomerDetail, TestCustomers, TestPostcodes } from '../utils/testData';
+import { DuplicateCustomerMessages, EmptyFields, NewCustomerDetail, SuccessMessages, TestCustomers, TestPostcodes } from '../utils/testData';
 
 /**
  * Test Suite: JIRA-1 - Create a Customer
@@ -21,14 +21,15 @@ import { NewCustomerDetail, TestCustomers, TestPostcodes } from '../utils/testDa
  */
 
 test.describe('JIRA-1: Create a Customer', () => {
-    let page: Page;
+
     let homePage: HomePage;
     let bankManagerPage: BankManagerPage;
     let addCustomerPage: AddCustomerPage;
     let customersTablePage: CustomersTablePage;
 
-    test.beforeEach(async ({ browser }) => {
-        page = await browser.newPage();
+    test.beforeEach(async ({ page,context,browser }) => {
+        context = await browser.newContext();
+        page = await context.newPage();
         homePage = new HomePage(page);
         bankManagerPage = new BankManagerPage(page);
         addCustomerPage = new AddCustomerPage(page);
@@ -39,7 +40,7 @@ test.describe('JIRA-1: Create a Customer', () => {
         await homePage.clickBankManagerLogin();
     });
 
-    test.afterEach(async () => {
+    test.afterEach(async ({page}) => {
         await page.close();
     });
  test('TC-JIRA1-001: Verify First Name field is required', async ({ browserName }) => {
@@ -56,9 +57,9 @@ test.describe('JIRA-1: Create a Customer', () => {
         // Assert
         const validationMessage = await addCustomerPage.getFieldValidationMessage('firstName');
         if (browserName === 'webkit') {
-            expect(validationMessage).toContain('Fill out this field');
+            expect(validationMessage).toContain(EmptyFields.FILL);
         } else {
-            expect(validationMessage).toContain('fill out this field');
+            expect(validationMessage).toContain(EmptyFields.FILL_SMALL);
         }
     });
 
@@ -76,9 +77,9 @@ test.describe('JIRA-1: Create a Customer', () => {
         // Assert
         const validationMessage = await addCustomerPage.getFieldValidationMessage('lastName');
         if (browserName === 'webkit') {
-            expect(validationMessage).toContain('Fill out this field');
+            expect(validationMessage).toContain(EmptyFields.FILL);
         } else {
-            expect(validationMessage).toContain('fill out this field');
+            expect(validationMessage).toContain(EmptyFields.FILL_SMALL);
         }
     });
 
@@ -97,9 +98,9 @@ test.describe('JIRA-1: Create a Customer', () => {
         const validationMessage = await addCustomerPage.getFieldValidationMessage('postCode');
 
         if (browserName === 'webkit') {
-            expect(validationMessage).toContain('Fill out this field');
+          await  expect(validationMessage).toContain(EmptyFields.FILL);
         } else {
-            expect(validationMessage).toContain('Please fill out this field');
+           await expect(validationMessage).toContain(EmptyFields.PLEASE_FILL);
         }
     });
     test('TC-JIRA1-004: Verify customer can be added successfully with valid details', async () => {
@@ -116,18 +117,18 @@ test.describe('JIRA-1: Create a Customer', () => {
         const alertMessage = await alertPromise;
 
         // Assert
-        expect(alertMessage).toContain('Customer added successfully with customer id');
+        expect(alertMessage).toContain(SuccessMessages.CUSTOMER_ADDED_SUCCESS);
         expect(alertMessage).toMatch(/Customer added successfully with customer id :\d+/);
 
         // Verify customer is added to the table
         await bankManagerPage.clickCustomers();
-        expect(customersTablePage.customersTable).toBeVisible();
+        await expect(customersTablePage.customersTable).toBeVisible();
         const customerExists = await customersTablePage.customerExists(firstName, lastName);
         const customer = await customersTablePage.findCustomerByName(firstName, lastName);
-        expect(customer).not.toBeNull();
-        expect(customer?.firstName).toBe(firstName);
-        expect(customer?.lastName).toBe(lastName);
-        expect(customer?.postCode).toBe(postCode);
+        await expect(customer).not.toBeNull();
+        await expect(customer?.firstName).toBe(firstName);
+        await expect(customer?.lastName).toBe(lastName);
+        await expect(customer?.postCode).toBe(postCode);
     });
 
     test('TC-JIRA1-005: Verify duplicate customer shows appropriate message', async () => {
@@ -144,7 +145,7 @@ test.describe('JIRA-1: Create a Customer', () => {
         const alertMessage = await alertPromise;
 
         // Assert
-        expect(alertMessage).toContain('Please check the details. Customer may be duplicate.');
+        expect(alertMessage).toContain(DuplicateCustomerMessages);
     });
   test('TC-JIRA1-006: Verify new customer appears in Customers table', async () => {
 
@@ -192,7 +193,7 @@ test.describe('JIRA-1: Create a Customer', () => {
         await addCustomerPage.addCustomer(firstName, lastName, postCode);
         const alertMessage = await alertPromise;
 
-        expect(alertMessage).toContain('Customer added successfully with customer id');
+        expect(alertMessage).toContain(SuccessMessages.CUSTOMER_ADDED_SUCCESS);
 
         await bankManagerPage.clickCustomers();
         const customer = await customersTablePage.findCustomerByName(firstName, lastName);

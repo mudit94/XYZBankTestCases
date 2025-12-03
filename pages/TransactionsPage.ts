@@ -17,6 +17,8 @@ export class TransactionsPage extends BasePage {
     resetButton: Locator;
     DateTimeHeaderLink: Locator;
     firstRow: Locator;
+    startDateInput: Locator;
+    endDateInput: Locator;
     constructor(page: Page) {
         super(page);
         this.transactionsTable = page.locator('table.table');
@@ -25,6 +27,8 @@ export class TransactionsPage extends BasePage {
         this.backButton = page.locator('button[ng-click="back()"]');
         this.resetButton = page.locator('button[ng-click="reset()"]');
         this.DateTimeHeaderLink = page.getByRole('link').filter({ hasText: 'Date-Time' });
+        this.startDateInput = page.locator('#start');
+        this.endDateInput = page.locator('#end');
     }
 
     /**
@@ -58,7 +62,7 @@ export class TransactionsPage extends BasePage {
             { timeout: 10000 }
         );
         const rows = await this.transactionRows.all();
-        expect(rows.length).toBeGreaterThan(0);
+        await expect(rows.length).toBeGreaterThan(0);
         if (rows.length > 0) {
             for (const row of rows) {
                 const cells = await row.locator('td').all();
@@ -93,12 +97,9 @@ export class TransactionsPage extends BasePage {
 
 
     async isLoaded(): Promise<boolean> {
-        return await this.backButton.isVisible() &&
-            await this.resetButton.isVisible();
+        return await this.isElementVisible(this.backButton) &&
+            await this.isElementVisible(this.resetButton);
     }
-
-
-
     /**
      * Get transactions by type (Credit/Debit)
      */

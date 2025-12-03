@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
     testDir: './tests',
-    fullyParallel: true,
+    fullyParallel: false,
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 2 : undefined,
@@ -17,15 +17,13 @@ export default defineConfig({
         baseURL: 'https://www.globalsqa.com/angularJs-protractor/BankingProject/',
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
-        video: 'retain-on-failure',
+        video: 'off',
         viewport: {
             width: 1920,
             height: 1080,
         },
-
         actionTimeout: 40000,
         navigationTimeout: 50000,
-        headless: true,
     },
     projects: [
         {

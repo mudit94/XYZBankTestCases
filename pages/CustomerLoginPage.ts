@@ -49,7 +49,7 @@ export class CustomerLoginPage extends BasePage {
      * Verify customer login page is loaded
      */
     async isLoaded(): Promise<boolean> {
-        return await this.userSelectDropdown.isVisible() &&
-            await this.loginButton.isVisible();
+        return await this.isElementVisible(this.userSelectDropdown) &&
+        await this.isElementVisible(this.loginButton);
     }
 }

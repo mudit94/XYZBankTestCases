@@ -86,7 +86,7 @@ export class AccountPage extends BasePage {
      */
     async clickDepositButtonTab(): Promise<void> {
         await this.depositButtonTab.click({ force: true });
-        await this.page.waitForTimeout(500);
+     //   await this.page.waitForTimeout(500);
     }
 
     /**
@@ -109,8 +109,8 @@ export class AccountPage extends BasePage {
      * Verify account page is loaded
      */
     async isLoaded(): Promise<boolean> {
-        return await this.welcomeMessage.isVisible() &&
-            await this.logoutButton.isVisible();
+        return await this.isElementVisible(this.welcomeMessage) &&
+            await this.isElementVisible(this.logoutButton);
     }
 
     /**

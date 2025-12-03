@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { HomePage } from '../pages/HomePage';
 import { BankManagerPage } from '../pages/BankManagerPage';
 import { OpenAccountPage } from '../pages/OpenAccountPage';
@@ -20,14 +20,14 @@ import { TestCurrencies, TestCustomers, SuccessMessages } from '../utils/testDat
  */
 
 test.describe('JIRA-2: Open an Account', () => {
-    let page: Page;
     let homePage: HomePage;
     let bankManagerPage: BankManagerPage;
     let openAccountPage: OpenAccountPage;
     let customersTablePage: CustomersTablePage;
 
-    test.beforeEach(async ({ browser }) => {
-        page = await browser.newPage();
+    test.beforeEach(async ({ browser ,context,page }) => {
+        context = await browser.newContext();
+        page = await context.newPage();
         homePage = new HomePage(page);
         bankManagerPage = new BankManagerPage(page);
         openAccountPage = new OpenAccountPage(page);
@@ -38,8 +38,10 @@ test.describe('JIRA-2: Open an Account', () => {
         await homePage.clickBankManagerLogin();
     });
 
-    test.afterEach(async () => {
+    test.afterEach(async ({ page }) => {
         await page.close();
+     //   await context.close();
+        //await browser.close();
     });
 
     test('TC-JIRA2-001: Verify account can be opened successfully with Dollar currency', async () => {
@@ -48,7 +50,7 @@ test.describe('JIRA-2: Open an Account', () => {
         const currency = TestCurrencies.DOLLARS
 
         await bankManagerPage.clickCustomers();
-        expect(customersTablePage.customersTable).toBeVisible();
+        await expect(customersTablePage.customersTable).toBeVisible();
         const initialAccountNumbers = await customersTablePage.getCustomerAccountNumbers('Hermoine', 'Granger');
 
         //Open Bank account
@@ -63,14 +65,14 @@ test.describe('JIRA-2: Open an Account', () => {
 
         // Extract account number from message
         const accountNumberMatch = alertMessage.match(/:(\d+)/);
-        expect(accountNumberMatch).not.toBeNull();
+        await expect(accountNumberMatch).not.toBeNull();
         const newAccountNumber = accountNumberMatch![1];
 
         // Verify customer record is updated
         await bankManagerPage.clickCustomers();
         const updatedAccountNumbers = await customersTablePage.getCustomerAccountNumbers('Hermoine', 'Granger');
-        expect(updatedAccountNumbers.length).toBe(initialAccountNumbers.length + 1);
-        expect(updatedAccountNumbers).toContain(newAccountNumber);
+        await expect(updatedAccountNumbers.length).toBe(initialAccountNumbers.length + 1);
+        await expect(updatedAccountNumbers).toContain(newAccountNumber);
     });
 
     test('TC-JIRA2-002: Verify account can be opened successfully with Pound currency', async () => {
@@ -93,7 +95,7 @@ test.describe('JIRA-2: Open an Account', () => {
         // Verify customer record is updated
         await bankManagerPage.clickCustomers();
         const updatedAccountNumbers = await customersTablePage.getCustomerAccountNumbers('Harry', 'Potter');
-        expect(updatedAccountNumbers.length).toBe(initialAccountNumbers.length + 1);
+        await expect(updatedAccountNumbers.length).toBe(initialAccountNumbers.length + 1);
     });
 
     test('TC-JIRA2-003: Verify account can be opened successfully with Rupee currency', async () => {
@@ -149,7 +151,7 @@ test.describe('JIRA-2: Open an Account', () => {
 
         // Assert
         const isLoaded = await openAccountPage.isLoaded();
-        expect(isLoaded).toBeTruthy();
+        await expect(isLoaded).toBeTruthy();
 
         await expect(openAccountPage.customerDropdown).toBeVisible();
         await expect(openAccountPage.currencyDropdown).toBeVisible();
@@ -164,7 +166,7 @@ test.describe('JIRA-2: Open an Account', () => {
         await bankManagerPage.clickCustomers();
         const initialAccountNumbers = await customersTablePage.getCustomerAccountNumbers('Albus', 'Dumbledore');
         const initialCount = initialAccountNumbers.length;
-        expect(initialCount).toBe(3);
+        await expect(initialCount).toBe(3);
 
         // Open fourth account
         await bankManagerPage.clickOpenAccount();
@@ -181,7 +183,7 @@ test.describe('JIRA-2: Open an Account', () => {
         // Assert
         await bankManagerPage.clickCustomers();
         const finalAccountNumbers = await customersTablePage.getCustomerAccountNumbers('Albus', 'Dumbledore');
-        expect(finalAccountNumbers.length).toBe(initialCount + 2);
+        await expect(finalAccountNumbers.length).toBe(initialCount + 2);
     });
 
     test('TC-JIRA2-008: Verify account number is unique', async () => {
@@ -204,7 +206,7 @@ test.describe('JIRA-2: Open an Account', () => {
 
         // Assert - All account numbers should be unique
         const uniqueAccountNumbers = new Set(accountNumbers);
-        expect(uniqueAccountNumbers.size).toBe(accountNumbers.length);
+        await expect(uniqueAccountNumbers.size).toBe(accountNumbers.length);
     });
 
     test('TC-JIRA2-009: Verify account creation updates customer table immediately', async () => {
@@ -223,8 +225,8 @@ test.describe('JIRA-2: Open an Account', () => {
 
         //Verify immediately in customers table
         await bankManagerPage.clickCustomers();
-        expect(customersTablePage.customersTable).toBeVisible();
+        await expect(customersTablePage.customersTable).toBeVisible();
         const accountNumbers = await customersTablePage.getCustomerAccountNumbers('Hermoine', 'Granger');
-        expect(accountNumbers).toContain(newAccountNumber);
+        await expect(accountNumbers).toContain(newAccountNumber);
     });
 });

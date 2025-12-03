@@ -81,10 +81,10 @@ export class AddCustomerPage extends BasePage {
      * Verify add customer page is loaded
      */
     async isLoaded(): Promise<boolean> {
-        return await this.firstNameInput.isVisible() &&
-            await this.lastNameInput.isVisible() &&
-            await this.postCodeInput.isVisible() &&
-            await this.addCustomerButton.isVisible();
+        return await this.isElementVisible(this.firstNameInput) &&
+            await this.isElementVisible(this.lastNameInput) &&
+            await this.isElementVisible(this.postCodeInput) &&
+            await this.isElementVisible(this.addCustomerButton);
     }
 
     /**

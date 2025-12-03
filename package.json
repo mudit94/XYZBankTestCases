@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test tests/createCustomer.spec.ts tests/openAccount.spec.ts tests/makeDeposit.spec.ts tests/withdrawBalance.spec.ts",
+    "test": "playwright test",
     "test:all": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
@@ -25,6 +25,7 @@
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@types/node": "^24.10.1",
+    "dayjs": "^1.11.19",
     "typescript": "^5.9.3"
   }
 }

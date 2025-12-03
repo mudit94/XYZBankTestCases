@@ -53,8 +53,8 @@ export class BankManagerPage extends BasePage {
      * Verify bank manager page is loaded
      */
     async isLoaded(): Promise<boolean> {
-        return await this.addCustomerButton.isVisible() &&
-            await this.openAccountButton.isVisible() &&
-            await this.customersButton.isVisible();
+        return await this.isElementVisible(this.addCustomerButton) &&
+            await this.isElementVisible(this.openAccountButton) &&
+            await this.isElementVisible(this.customersButton);
     }
 }

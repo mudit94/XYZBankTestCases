@@ -32,15 +32,7 @@ export class BasePage {
         return await locator.isVisible();
     }
 
-    async getCurrentUrl(): Promise<string> {
-        return this.page.url();
-    }
+   
 
-    /**
-     * Take screenshot
-     */
-    async takeScreenshot(name: string): Promise<void> {
-        await this.page.screenshot({ path: `screenshots/${name}.png`, fullPage: true });
-    }
     
 }
