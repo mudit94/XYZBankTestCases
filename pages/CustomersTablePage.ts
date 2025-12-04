@@ -11,24 +11,24 @@ export interface Customer {
 
 export class CustomersTablePage extends BasePage {
     // Locators
-     customersTable: Locator;
-     customerRows: Locator;
-     searchBox: Locator;
+    customersTable: Locator;
+    customerRows: Locator;
+    searchBox: Locator;
 
     constructor(page: Page) {
         super(page);
         this.customersTable = page.locator('table.table');
         this.customerRows = page.locator('table.table tbody tr');
-        this.searchBox = page.locator('input[ng-model="searchCustomer"]');
+        this.searchBox = page.getByPlaceholder('Search Customer');
     }
 
     /**
      * Search for a customer
      */
     async searchCustomer(searchTerm: string): Promise<void> {
-        await this.searchBox.clear();
+        //await this.searchBox.clear();
         await this.searchBox.fill(searchTerm);
-        await this.page.waitForTimeout(500);
+        //return await this.customerRows.count();
     }
 
     /**
@@ -60,6 +60,33 @@ export class CustomersTablePage extends BasePage {
         ) || null;
     }
 
+    async findCustomerBySearching(searchTerm: string): Promise<Customer[] | null> {
+        await this.searchCustomer(searchTerm);
+
+        // Wait for the table to update after search filter is applied
+        await this.page.waitForTimeout(300);
+
+        const customers: Customer[] = [];
+        const rows = await this.customerRows.all();
+
+        if (rows.length === 0) {
+            return null;
+        }
+
+        // Iterate through each filtered row
+        for (const row of rows) {
+            const cells = await row.locator('td').all();
+            if (cells.length >= 4) {
+                const firstName = await cells[0].textContent() || '';
+                const lastName = await cells[1].textContent() || '';
+                const postCode = await cells[2].textContent() || '';
+                const accountNumbers = await cells[3].textContent() || '';
+                customers.push({ firstName, lastName, postCode, accountNumbers });
+            }
+        }
+
+        return customers.length > 0 ? customers : null;
+    }
     /**
      * Check if customer exists
      */
@@ -89,7 +116,7 @@ export class CustomersTablePage extends BasePage {
         return accountNumbersText.split(/\s+/).filter(num => num.length > 0);
     }
 
-   
+
     async isLoaded(): Promise<boolean> {
         return await this.customersTable.isVisible() &&
             await this.searchBox.isVisible();

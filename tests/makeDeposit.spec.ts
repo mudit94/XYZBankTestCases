@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { HomePage, CustomerLoginPage, AccountPage, DepositPage, TransactionsPage } from '../pages/index';
+import { PageManager } from '../pages/PageManager';
 import { EmptyFields, SuccessMessages } from '../utils/testData';
 
 /**
@@ -18,24 +18,17 @@ import { EmptyFields, SuccessMessages } from '../utils/testData';
  */
 
 test.describe('JIRA-3: Make a Deposit', () => {
-    let homePage: HomePage;
-    let customerLoginPage: CustomerLoginPage;
-    let accountPage: AccountPage;
-    let depositPage: DepositPage;
-    let transactionsPage: TransactionsPage;
+    let pageManager: PageManager;
+
     test.beforeEach(async ({ browser, context, page }) => {
         context = await browser.newContext();
         page = await context.newPage();
-        homePage = new HomePage(page);
-        customerLoginPage = new CustomerLoginPage(page);
-        accountPage = new AccountPage(page);
-        depositPage = new DepositPage(page);
-        transactionsPage = new TransactionsPage(page);
+        pageManager = new PageManager(page);
 
         // Login as customer    
-        await homePage.goto();
-        await homePage.clickCustomerLogin();
-        await customerLoginPage.login('Hermoine Granger');
+        await pageManager.homePage.goto();
+        await pageManager.homePage.clickCustomerLogin();
+        await pageManager.customerLoginPage.login('Hermoine Granger');
     });
 
     test.afterEach(async ({ page }) => {
@@ -45,58 +38,59 @@ test.describe('JIRA-3: Make a Deposit', () => {
     test('TC-JIRA3-001: Verify "Deposit Successful" message is shown in "Red Color" "Above the" amount to be deposited label ', async () => {
         const depositAmount = 100;
 
-        await accountPage.clickDepositButtonTab();
-        await depositPage.deposit(depositAmount);
+        await pageManager.accountPage.clickDepositButtonTab();
+        await pageManager.depositPage.deposit(depositAmount);
 
-        const message = await depositPage.getDepositMessage();
+        const message = await pageManager.depositPage.getDepositMessage();
         await expect(message).toBe(SuccessMessages.DEPOSIT_SUCCESS);
 
         // Get  color of the deposit message
-        const color = await depositPage.depositMessage.evaluate((el) => {
+        const color = await pageManager.depositPage.depositMessage.evaluate((el) => {
             return window.getComputedStyle(el).color;
         });
         // red is "rgb(255, 0, 0)"
         expect(color).toBe('rgb(255, 0, 0)');
         // Verify message is visible
-        await expect(depositPage.depositMessage).toBeVisible();
+        await expect(pageManager.depositPage.depositMessage).toBeVisible();
         // Verify message is above the amount field
-        const messageBox = await depositPage.depositMessage.boundingBox();
-        const inputBox = await depositPage.amountLabel.boundingBox();
+        const messageBox = await pageManager.depositPage.depositMessage.boundingBox();
+        const inputBox = await pageManager.depositPage.amountLabel.boundingBox();
 
-       await expect(messageBox).not.toBeNull();
+        await expect(messageBox).not.toBeNull();
         await expect(inputBox).not.toBeNull();
         await expect(messageBox!.y).toBeLessThan(inputBox!.y);
     });
 
     test('TC-JIRA3-002: Verify account balance is updated after deposit', async ({ page }) => {
         const depositAmount = 500;
-        const initialBalance = await accountPage.getBalanceAsNumber();
+        const initialBalance = await pageManager.accountPage.getBalanceAsNumber();
 
-        await accountPage.clickDepositButtonTab();
-        await depositPage.deposit(depositAmount);
+        await pageManager.accountPage.clickDepositButtonTab();
+        await pageManager.depositPage.deposit(depositAmount);
 
         await page.waitForTimeout(1000); // Wait for balance to update
-        const newBalance = await accountPage.getBalanceAsNumber();
+        const newBalance = await pageManager.accountPage.getBalanceAsNumber();
         await expect(newBalance).toBe(initialBalance + depositAmount);
     });
 
     test(`TC-JIRA3-003: Verify deposit transaction appears in Transactions table with type "Credit"`, async ({ page }) => {
         const depositAmount = 250;
-        await accountPage.clickDepositButtonTab();
-        await depositPage.deposit(depositAmount);
-        let result = await depositPage.isDepositSuccessful();
+        await pageManager.accountPage.clickDepositButtonTab();
+        await pageManager.depositPage.deposit(depositAmount);
+        let result = await pageManager.depositPage.isDepositSuccessful();
         await expect(result).toBeTruthy();
 
         // Navigate to transactions
-        await accountPage.clickTransactions();
-        await transactionsPage.transactionsTable.waitFor({ state: 'visible', timeout: 5000 });
+        await pageManager.accountPage.clickTransactions();
+        await pageManager.transactionsPage.transactionsTable.waitFor({ state: 'visible', timeout: 5000 });
 
         // Click Date-Time header to sort transactions in reverse order (most recent first)
-        await transactionsPage.clickDateTimeHeaderLink();
+        await pageManager.transactionsPage.clickDateTimeHeaderLink();
+
+        await page.waitForTimeout(1000); // Wait for sort to apply
 
         // Get all transactions after sorting
-        const transactions = await transactionsPage.getAllTransactions();
-        await page.waitForTimeout(500); // Wait for sort to apply
+        const transactions = await pageManager.transactionsPage.getFirstElementOfTable();
 
         await expect(transactions.length).toBeGreaterThan(0);
         // After sorting by Date-Time in reverse, the first transaction should be our most recent deposit
@@ -107,15 +101,15 @@ test.describe('JIRA-3: Make a Deposit', () => {
 
     test('TC-JIRA3-004: Verify empty amount shows validation tooltip', async ({ browserName }) => {
 
-        await accountPage.clickDepositButtonTab();
-        await depositPage.amountInput.waitFor({ state: 'visible' });
-        await depositPage.clickDeposit(); // Click without entering amount
-        const validationMessage = await depositPage.getFieldValidationMessage();
+        await pageManager.accountPage.clickDepositButtonTab();
+        await pageManager.depositPage.amountInput.waitFor({ state: 'visible' });
+        await pageManager.depositPage.clickDeposit(); // Click without entering amount
+        const validationMessage = await pageManager.depositPage.getFieldValidationMessage();
         if (browserName === 'firefox') {
-          await  expect(validationMessage).toContain('Please enter a number');
+            await expect(validationMessage).toContain('Please enter a number');
         }
         else if (browserName === 'webkit') {
-           await expect(validationMessage).toContain('Fill out this field');
+            await expect(validationMessage).toContain('Fill out this field');
         }
         else {
             await expect(validationMessage).toContain('fill');
@@ -125,17 +119,17 @@ test.describe('JIRA-3: Make a Deposit', () => {
     test('TC-JIRA3-005: Verify multiple deposits update balance correctly', async ({ page }) => {
 
         const deposits = [100, 200, 150];
-        const initialBalance = await accountPage.getBalanceAsNumber();
-        await accountPage.clickDepositButtonTab();
-        await depositPage.depositAmountHeading.waitFor({ state: 'visible' });
+        const initialBalance = await pageManager.accountPage.getBalanceAsNumber();
+        await pageManager.accountPage.clickDepositButtonTab();
+        await pageManager.depositPage.depositAmountHeading.waitFor({ state: 'visible' });
 
         for (const amount of deposits) {
-            await depositPage.deposit(amount);
+            await pageManager.depositPage.deposit(amount);
             await page.waitForTimeout(500);
         }
         const totalDeposited = deposits.reduce((sum, val) => sum + val, 0);
         const expectedBalance = initialBalance + totalDeposited;
-        const finalBalance = await accountPage.getBalanceAsNumber();
+        const finalBalance = await pageManager.accountPage.getBalanceAsNumber();
         await expect(finalBalance).toBe(expectedBalance);
     });
 
@@ -143,10 +137,10 @@ test.describe('JIRA-3: Make a Deposit', () => {
 
         const depositAmount = 123.45;
         const minRound = Math.floor(depositAmount);
-        await accountPage.clickDepositButtonTab();
-        await depositPage.depositAmountHeading.waitFor({ state: 'visible' });
-        await depositPage.deposit(depositAmount);
-        const validationMessage = await depositPage.getFieldValidationMessage()
+        await pageManager.accountPage.clickDepositButtonTab();
+        await pageManager.depositPage.depositAmountHeading.waitFor({ state: 'visible' });
+        await pageManager.depositPage.deposit(depositAmount);
+        const validationMessage = await pageManager.depositPage.getFieldValidationMessage()
 
         if (browserName === 'webkit') {
             await expect(validationMessage).toContain(EmptyFields.ENTER);
@@ -163,41 +157,41 @@ test.describe('JIRA-3: Make a Deposit', () => {
     test('TC-JIRA3-007: Verify deposit with small amount', async () => {
 
         const depositAmount = 1;
-        const initialBalance = await accountPage.getBalanceAsNumber();
+        const initialBalance = await pageManager.accountPage.getBalanceAsNumber();
 
-        await accountPage.clickDepositButtonTab();
-        await depositPage.depositAmountHeading.waitFor({ state: 'visible' });
-        await depositPage.deposit(depositAmount);
+        await pageManager.accountPage.clickDepositButtonTab();
+        await pageManager.depositPage.depositAmountHeading.waitFor({ state: 'visible' });
+        await pageManager.depositPage.deposit(depositAmount);
 
-        const message = await depositPage.getDepositMessage();
+        const message = await pageManager.depositPage.getDepositMessage();
         expect(message).toBe(SuccessMessages.DEPOSIT_SUCCESS);
 
-        const newBalance = await accountPage.getBalanceAsNumber();
+        const newBalance = await pageManager.accountPage.getBalanceAsNumber();
         await expect(newBalance).toBe(initialBalance + depositAmount);
     });
 
 
     test('TC-JIRA3-009: Verify deposit form elements are displayed correctly', async () => {
         // Act
-        await accountPage.clickDepositButtonTab();
-        await expect(depositPage.amountInput).toBeVisible();
-        await expect(depositPage.depositButton).toBeVisible();
-        await expect(depositPage.amountLabel).toBeVisible();
+        await pageManager.accountPage.clickDepositButtonTab();
+        await expect(pageManager.depositPage.amountInput).toBeVisible();
+        await expect(pageManager.depositPage.depositButton).toBeVisible();
+        await expect(pageManager.depositPage.amountLabel).toBeVisible();
     });
 
     test('TC-JIRA3-010: Verify currency remains same after deposit', async () => {
         // Arrange
         const depositAmount = 300;
-        const currency = await accountPage.getCurrency();
+        const currency = await pageManager.accountPage.getCurrency();
 
         // Act
-        await accountPage.clickDepositButtonTab();
-        await depositPage.deposit(depositAmount);
+        await pageManager.accountPage.clickDepositButtonTab();
+        await pageManager.depositPage.deposit(depositAmount);
 
         // Assert
         // Wait for deposit message to confirm transaction completed
-        await depositPage.depositMessage.waitFor({ state: 'visible', timeout: 5000 });
-        const newCurrency = await accountPage.getCurrency();
+        await pageManager.depositPage.depositMessage.waitFor({ state: 'visible', timeout: 5000 });
+        const newCurrency = await pageManager.accountPage.getCurrency();
         await expect(newCurrency).toBe(currency);
     });
 
@@ -206,12 +200,12 @@ test.describe('JIRA-3: Make a Deposit', () => {
         const depositAmount = 100;
 
         // Act
-        await accountPage.clickDepositButtonTab();
-        await depositPage.deposit(depositAmount);
-        await depositPage.depositMessage.waitFor({ state: 'visible', timeout: 5000 });
+        await pageManager.accountPage.clickDepositButtonTab();
+        await pageManager.depositPage.deposit(depositAmount);
+        await pageManager.depositPage.depositMessage.waitFor({ state: 'visible', timeout: 5000 });
 
         // Assert
-        const inputValue = await depositPage.amountInput.inputValue();
+        const inputValue = await pageManager.depositPage.amountInput.inputValue();
         await expect(inputValue).toBe('');
     });
 
@@ -220,25 +214,25 @@ test.describe('JIRA-3: Make a Deposit', () => {
         const deposits = [100, 200, 300];
 
         // Get initial transaction count
-        await accountPage.clickTransactions();
-        await transactionsPage.clickReset();
-        const initialCount = await transactionsPage.getTransactionCount();
-        await transactionsPage.clickBack();
+        await pageManager.accountPage.clickTransactions();
+        await pageManager.transactionsPage.clickReset();
+        const initialCount = await pageManager.transactionsPage.getTransactionCount();
+        await pageManager.transactionsPage.clickBack();
 
         // Act
-        await accountPage.clickDepositButtonTab();
+        await pageManager.accountPage.clickDepositButtonTab();
         for (const amount of deposits) {
-            await depositPage.deposit(amount);
+            await pageManager.depositPage.deposit(amount);
             await page.waitForTimeout(500);
         }
 
         // Assert
-        await accountPage.clickTransactions();
-        const finalCount = await transactionsPage.getTransactionCount();
+        await pageManager.accountPage.clickTransactions();
+        const finalCount = await pageManager.transactionsPage.getTransactionCount();
         await expect(finalCount).toBe(initialCount + deposits.length);
 
         // Verify all are Credit type
-        const creditTransactions = await transactionsPage.getTransactionsByType('Credit');
+        const creditTransactions = await pageManager.transactionsPage.getTransactionsByType('Credit');
         await expect(creditTransactions.length).toBeGreaterThanOrEqual(deposits.length);
     });
 });

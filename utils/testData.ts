@@ -35,7 +35,7 @@ export const SuccessMessages = {
     DEPOSIT_SUCCESS: 'Deposit Successful',
     WITHDRAWAL_SUCCESS: 'Transaction successful',
     ACCOUNT_CREATED_SUCCESS: 'Account created successfully with account Number :',
-    CUSTOMER_ADDED_SUCCESS: 'Customer added successfully with customer id'
+    CUSTOMER_ADDED_SUCCESS: 'Customer added successfully with customer id '
 } as const;
 export const URLs = {
     BASE_URL: 'https://www.globalsqa.com/angularJs-protractor/BankingProject',
@@ -60,3 +60,4 @@ export const EmptyFields = {
     FILL_SMALL: 'fill out this field'
 } as const
 export const DuplicateCustomerMessages = 'Please check the details. Customer may be duplicate.';
+export const lastNameData = 'Automation';

@@ -1,7 +1,6 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-
 export interface Transaction {
     date: string;
     amount: string;
@@ -17,8 +16,6 @@ export class TransactionsPage extends BasePage {
     resetButton: Locator;
     DateTimeHeaderLink: Locator;
     firstRow: Locator;
-    startDateInput: Locator;
-    endDateInput: Locator;
     constructor(page: Page) {
         super(page);
         this.transactionsTable = page.locator('table.table');
@@ -27,8 +24,6 @@ export class TransactionsPage extends BasePage {
         this.backButton = page.locator('button[ng-click="back()"]');
         this.resetButton = page.locator('button[ng-click="reset()"]');
         this.DateTimeHeaderLink = page.getByRole('link').filter({ hasText: 'Date-Time' });
-        this.startDateInput = page.locator('#start');
-        this.endDateInput = page.locator('#end');
     }
 
     /**
@@ -55,12 +50,14 @@ export class TransactionsPage extends BasePage {
      */
     async getAllTransactions(): Promise<Transaction[]> {
         const transactions: Transaction[] = [];
-        await this.page.waitForSelector('table.table tbody tr#anchor0', { state: 'visible', timeout: 10000 });
+        // await this.page.waitForSelector('table.table tbody tr#anchor0', { state: 'visible', timeout: 10000 });
+        // await this.page.waitForFunction(
+        //     `document.querySelectorAll('table.table tbody tr').length >= 0`,
+        //     { timeout: 10000 }
+        // );
+        //await this.page.waitForLoadState('domcontentloaded');
+        await this.page.waitForTimeout(1000);
         await expect(this.firstRow).toBeVisible({ timeout: 15000 });
-        await this.page.waitForFunction(
-            `document.querySelectorAll('table.table tbody tr').length >= 0`,
-            { timeout: 10000 }
-        );
         const rows = await this.transactionRows.all();
         await expect(rows.length).toBeGreaterThan(0);
         if (rows.length > 0) {
@@ -75,6 +72,20 @@ export class TransactionsPage extends BasePage {
             }
         }
         return transactions;
+    }
+    async getFirstElementOfTable(): Promise<Transaction[]> {
+        await this.page.waitForTimeout(1000);
+        await expect(this.firstRow).toBeVisible({ timeout: 15000 });
+        const row1 = await this.transactionRows.first();
+        const cells = await row1.locator('td').all();
+        const transaction: Transaction[] = [];
+        if (cells.length >= 3) {
+            const date = await cells[0].textContent() || '';
+            const amount = await cells[1].textContent() || '';
+            const type = await cells[2].textContent() || '';
+            await transaction.push({ date, amount, type });
+        }
+        return transaction;
     }
     async getFirstColumnOfTable(): Promise<string[]> {
         const rows = await this.transactionRows.all();

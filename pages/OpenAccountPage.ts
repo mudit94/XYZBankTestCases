@@ -1,12 +1,12 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 
 export class OpenAccountPage extends BasePage {
     // Locators
-     customerDropdown: Locator;
-     currencyDropdown: Locator;
-     processButton: Locator;
+    customerDropdown: Locator;
+    currencyDropdown: Locator;
+    processButton: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -25,7 +25,7 @@ export class OpenAccountPage extends BasePage {
     /**
      * Select currency
      */
-    async selectCurrency(currency: 'Dollar' | 'Pound' | 'Rupee'): Promise<void> {
+    async selectCurrency(currency: string): Promise<void> {
         await this.currencyDropdown.selectOption({ label: currency });
     }
 
@@ -39,13 +39,13 @@ export class OpenAccountPage extends BasePage {
     /**
      * Complete open account flow
      */
-    async openAccount(customerName: string, currency: 'Dollar' | 'Pound' | 'Rupee'): Promise<void> {
+    async openAccount(customerName: string, currency: string): Promise<void> {
         await this.selectCustomer(customerName);
         await this.selectCurrency(currency);
         await this.clickProcess();
     }
 
-  
+
     async handleAlert(): Promise<string> {
         return new Promise((resolve) => {
             this.page.once('dialog', async (dialog) => {
@@ -60,12 +60,14 @@ export class OpenAccountPage extends BasePage {
      * Get available customers from dropdown
      */
     async getAvailableCustomers(): Promise<string[]> {
+        await expect(this.customerDropdown).toBeEnabled();
         const options = await this.customerDropdown.locator('option').allTextContents();
         return options.filter(option => option.trim() !== '---Your Name---');
     }
 
-    
+
     async getAvailableCurrencies(): Promise<string[]> {
+        await expect(this.currencyDropdown).toBeEnabled();
         const options = await this.currencyDropdown.locator('option').allTextContents();
         return options.filter(option => option.trim() !== '---Currency---');
     }

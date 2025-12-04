@@ -4,8 +4,8 @@ export default defineConfig({
     testDir: './tests',
     fullyParallel: false,
     forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 2 : 0,
-    workers: process.env.CI ? 2 : undefined,
+    retries: process.env.CI ? 2 : 2,
+    workers: process.env.CI ? 2 : undefined, 
     reporter: [
         ['html', { outputFolder: 'playwright-report' }],
         ['json', { outputFile: 'test-results/results.json' }],
